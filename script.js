@@ -5,18 +5,19 @@ const tg = window.Telegram && window.Telegram.WebApp;
 let S = {
     name: 'Пользователь', 
     nick: '', 
-    id: '---',
+    id: 'test_browser_id', 
     bal: 0,
     photo: null, 
     keyHidden: true,
     fullKey: 'c17c66949f3d1b2e7a4c5aa',
     shortKey: 'c17c6694...a5aa',
-    
-    // Данные для магазина (МЕНЯЕМ СКЛАД НА 100)
-    boostStock: 100,   // В наличии: 100 шт.
+    boostStock: 0,   
     boostPrice: 20.00,
     boostCount: 1      
 };
+
+// ЗДЕСЬ УКАЖИ СВОЙ ЮЗЕРНЕЙМ В ТЕЛЕГРАМЕ ДЛЯ ПРИЕМА ОПЛАТЫ:
+const ADMIN_USERNAME = 'your_username';
 
 const formatMoney = (amount) => Number(amount).toFixed(2) + ' ₴';
 
@@ -27,10 +28,51 @@ if (tg) {
     if (u) {
         S.name = u.first_name || 'Пользователь';
         S.nick = u.username ? '@' + u.username : ''; 
-        S.id = u.id || '---';
+        S.id = String(u.id); 
         S.photo = u.photo_url || null;
     }
 }
+
+// --- СВЯЗЬ С БЭКЕНДОМ ---
+async function fetchUserData() {
+    try {
+        const res = await fetch('/api/get_user', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({tg_id: S.id, name: S.name})
+        });
+        const data = await res.json();
+        S.bal = data.balance;
+        S.boostStock = data.stock;
+    } catch (e) {
+        console.error("Ошибка сети:", e);
+    }
+}
+
+async function buyItemOnServer(amount, totalPrice) {
+    try {
+        const res = await fetch('/api/buy', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({tg_id: S.id, amount: amount, total_price: totalPrice})
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+            S.bal = data.new_balance;
+            S.boostStock = data.new_stock;
+            return true;
+        } else {
+            showToast(data.detail || "Ошибка покупки");
+            return false;
+        }
+    } catch (e) {
+        showToast("Ошибка соединения с сервером");
+        return false;
+    }
+}
+
+// ---------------------------------
 
 function updateBuyUI() {
     const cEl = document.getElementById('boost-count');
@@ -47,6 +89,10 @@ function updateStockUI() {
     });
 }
 
+function updateBalanceUI() {
+    document.querySelectorAll('.user-bal').forEach(el => el.textContent = formatMoney(S.bal));
+}
+
 function initUI() {
     const h = new Date().getHours();
     const greeting = (h < 5 ? 'Доброй ночи' : h < 12 ? 'Доброе утро' : h < 18 ? 'Удачи в продажах' : 'Славный вечер') + ', ' + S.name;
@@ -55,8 +101,8 @@ function initUI() {
     document.querySelectorAll('.user-name').forEach(el => el.textContent = S.name);
     document.querySelectorAll('.user-nick').forEach(el => el.textContent = S.nick);
     document.querySelectorAll('.user-id').forEach(el => el.textContent = S.id);
-    document.querySelectorAll('.user-bal').forEach(el => el.textContent = formatMoney(S.bal));
-
+    
+    updateBalanceUI();
     updateStockUI();
     updateBuyUI();
 
@@ -71,25 +117,72 @@ function initUI() {
         }
     }
 
+    const btnEditBanner = document.getElementById('btn-edit-banner');
+    const btnResetImages = document.getElementById('btn-reset-images');
+    const previewAvatar = document.getElementById('preview-avatar');
+    const previewBanner = document.getElementById('preview-banner');
+    const bannerText = document.getElementById('banner-text');
+    const uploadBanner = document.getElementById('upload-banner');
+    const uploadAvatar = document.getElementById('upload-avatar');
+
+    if (btnEditBanner && uploadBanner) btnEditBanner.addEventListener('click', () => uploadBanner.click());
+    if (previewAvatar && uploadAvatar) previewAvatar.addEventListener('click', () => uploadAvatar.click());
+
+    if (uploadBanner) {
+        uploadBanner.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewBanner.style.backgroundImage = `url('${e.target.result}')`;
+                    if(bannerText) bannerText.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    if (uploadAvatar) {
+        uploadAvatar.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewAvatar.style.backgroundImage = `url('${e.target.result}')`;
+                    previewAvatar.innerHTML = '';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    if (btnResetImages) {
+        btnResetImages.addEventListener('click', () => {
+            previewBanner.style.backgroundImage = '';
+            if(bannerText) bannerText.style.display = 'block';
+            if(uploadBanner) uploadBanner.value = '';
+            previewAvatar.style.backgroundImage = '';
+            previewAvatar.innerHTML = 'TOOL<br>SHOP';
+            if(uploadAvatar) uploadAvatar.value = '';
+            showToast('Фотографии сброшены');
+        });
+    }
+
     const car = document.getElementById('car');
     if (car) {
         const dots = document.querySelectorAll('#dots i');
         const slides = car.querySelectorAll('.slide');
         let autoScrollTimer;
-
         car.addEventListener('scroll', () => {
             const i = Math.round(car.scrollLeft / car.clientWidth);
             dots.forEach((d, j) => d.classList.toggle('on', i === j));
         });
-
         const scrollNext = () => {
             if (!document.getElementById('view-home').classList.contains('active')) return;
             const currentIndex = Math.round(car.scrollLeft / car.clientWidth);
-            let nextIndex = currentIndex + 1;
-            if (nextIndex >= slides.length) nextIndex = 0;
+            let nextIndex = currentIndex + 1 >= slides.length ? 0 : currentIndex + 1;
             slides[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         };
-
         const startAutoScroll = () => { autoScrollTimer = setInterval(scrollNext, 3500); };
         const stopAutoScroll = () => { clearInterval(autoScrollTimer); };
 
@@ -97,30 +190,24 @@ function initUI() {
         car.addEventListener('touchend', startAutoScroll, {passive: true});
         car.addEventListener('mouseenter', stopAutoScroll);
         car.addEventListener('mouseleave', startAutoScroll);
-
         startAutoScroll();
     }
 
     const pin = document.getElementById('pin');
-    if (pin) {
-        pin.addEventListener('input', () => {
-            document.getElementById('pn').textContent = pin.value;
-            document.getElementById('pc').textContent = pin.value.length + '/20';
-        });
-    }
+    if (pin) pin.addEventListener('input', () => {
+        document.getElementById('pn').textContent = pin.value;
+        document.getElementById('pc').pin.value.length + '/20';
+    });
+
     const bio = document.getElementById('bio');
-    if (bio) {
-        bio.addEventListener('input', () => {
-            document.getElementById('bc').textContent = bio.value.length + '/190';
-        });
-    }
+    if (bio) bio.addEventListener('input', () => {
+        document.getElementById('bc').textContent = bio.value.length + '/190';
+    });
 }
-initUI();
 
 function switchTab(tabId) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + tabId).classList.add('active');
-
     document.querySelectorAll('nav button').forEach(b => {
         if (b.dataset.t === tabId || (tabId === 'hist' && b.dataset.t === 'me')) {
             b.classList.add('on');
@@ -131,8 +218,44 @@ function switchTab(tabId) {
     document.getElementById('app').scrollTop = 0;
 }
 
-document.addEventListener('click', e => {
-    const t = e.target.closest('[data-t], [data-go], [data-opt], [data-buy-tab], [data-lang], [data-toast], [data-topup], [data-buy-action], #boost-minus, #boost-plus, [data-boost-val], #toggle-key, #copy-key');
+document.addEventListener('click', async e => {
+    // === ОБРАБОТКА КЛИКОВ ПО СПОСОБАМ ПОПОЛНЕНИЯ И МОДАЛКАМ ===
+    const tPay = e.target.closest('.pay-method');
+    if (tPay) {
+        showToast('Ожидание оплаты...');
+        document.getElementById('topup-modal').classList.remove('active');
+        
+        // Открываем личку с админом для перевода (так как баланс пополняется вручную при переводе)
+        setTimeout(() => {
+            if (tg) {
+                tg.openTelegramLink(`https://t.me/${ADMIN_USERNAME}`);
+            } else {
+                window.open(`https://t.me/${ADMIN_USERNAME}`, '_blank');
+            }
+        }, 1000);
+        return;
+    }
+
+    const tOpenModal = e.target.closest('[data-open-modal]');
+    if (tOpenModal) {
+        document.getElementById(tOpenModal.dataset.openModal).classList.add('active');
+        return;
+    }
+
+    const tCloseModal = e.target.closest('[data-close-modal], .modal-overlay');
+    // Если кликнули на саму форму внутри модалки - не закрываем
+    if (tCloseModal && !e.target.closest('.modal-sheet')) {
+        document.getElementById('topup-modal').classList.remove('active');
+        return;
+    }
+    // Если кликнули именно по кнопке "Отмена"
+    if (e.target.closest('[data-close-modal]')) {
+        document.getElementById('topup-modal').classList.remove('active');
+        return;
+    }
+    // =========================================================
+
+    const t = e.target.closest('[data-t], [data-go], [data-opt], [data-buy-tab], [data-lang], [data-toast], [data-buy-action], #boost-minus, #boost-plus, [data-boost-val]');
     if (!t) return;
 
     if (t.dataset.t || t.dataset.go) {
@@ -142,7 +265,6 @@ document.addEventListener('click', e => {
         t.parentElement.querySelectorAll('.opt').forEach(opt => opt.classList.remove('sel'));
         t.classList.add('sel');
     }
-    
     else if (t.id === 'boost-minus') {
         if (S.boostCount > 1) { S.boostCount--; updateBuyUI(); }
     }
@@ -152,35 +274,32 @@ document.addEventListener('click', e => {
     }
     else if (t.hasAttribute('data-boost-val')) {
         let val = parseInt(t.dataset.boostVal);
-        if (val <= S.boostStock) { S.boostCount = val; }
-        else { S.boostCount = S.boostStock; }
+        S.boostCount = val <= S.boostStock ? val : S.boostStock;
+        if(S.boostStock === 0) S.boostCount = 1;
         updateBuyUI();
     }
     
+    // Кнопка покупки с сервера
     else if (t.dataset.buyAction === 'boosts') {
         let total = S.boostCount * S.boostPrice;
+        if (S.boostCount > S.boostStock) return showToast('Недостаточно товара!');
         
-        if (S.boostCount > S.boostStock) {
-            return showToast('Недостаточно товара в наличии!');
+        const originalText = t.textContent;
+        t.textContent = "Обработка...";
+        t.style.pointerEvents = "none";
+
+        const success = await buyItemOnServer(S.boostCount, total);
+        
+        if (success) {
+            S.boostCount = 1; 
+            updateBalanceUI();
+            updateStockUI();
+            updateBuyUI();
+            showToast('Покупка успешно выполнена!');
         }
-        if (S.bal < total) {
-            return showToast('Недостаточно средств. Пополните баланс');
-        }
         
-        S.bal -= total;
-        S.boostStock -= S.boostCount;
-        S.boostCount = 1; 
-        
-        document.querySelectorAll('.user-bal').forEach(el => el.textContent = formatMoney(S.bal));
-        updateStockUI();
-        updateBuyUI();
-        showToast('Покупка успешно выполнена!');
-    }
-    
-    else if (t.dataset.topup) {
-        S.bal += 1000;
-        document.querySelectorAll('.user-bal').forEach(el => el.textContent = formatMoney(S.bal));
-        showToast('Баланс пополнен на 1000 ₴ (Тест)');
+        t.textContent = originalText;
+        t.style.pointerEvents = "auto";
     }
 
     else if (t.dataset.buyTab) {
@@ -189,22 +308,8 @@ document.addEventListener('click', e => {
         document.querySelectorAll('.buy-sec').forEach(sec => sec.classList.remove('active'));
         document.getElementById('buy-sec-' + t.dataset.buyTab).classList.add('active');
     }
-    else if (t.dataset.lang) {
-        document.querySelectorAll('[data-lang]').forEach(btn => btn.classList.remove('on'));
-        t.classList.add('on');
-    }
     else if (t.dataset.toast) {
         showToast(t.dataset.toast);
-    }
-    else if (t.id === 'toggle-key') {
-        S.keyHidden = !S.keyHidden;
-        document.getElementById('api-key-text').textContent = S.keyHidden ? S.shortKey : S.fullKey;
-    }
-    else if (t.id === 'copy-key') {
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(S.fullKey).catch(() => {});
-        }
-        showToast('API ключ скопирован');
     }
 });
 
@@ -215,13 +320,15 @@ function showToast(text) {
     setTimeout(() => toast.classList.remove('on'), 1800);
 }
 
-// --- ЛОГИКА ЭКРАНА ЗАГРУЗКИ ---
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
+    await fetchUserData();
+    initUI();
+    
     setTimeout(() => {
         const loader = document.getElementById('loader');
         if(loader) {
             loader.classList.add('hidden');
             setTimeout(() => { loader.remove(); }, 500);
         }
-    }, 1500);
+    }, 500);
 });
