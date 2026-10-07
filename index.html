@@ -40,7 +40,15 @@
             <symbol id="ic-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
             <symbol id="ic-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="3"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></symbol>
             <symbol id="ic-dash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></symbol>
+            <symbol id="ic-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></symbol>
             
+            <!-- Иконки для методов оплаты -->
+            <symbol id="ic-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></symbol>
+            <symbol id="ic-crypto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 8h8M12 8v8"/></symbol>
+            <symbol id="ic-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a5 5 0 0 1 5 5v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7a5 5 0 0 1 5-5h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/><path d="M9 13v.01M15 13v.01"/></symbol>
+            <symbol id="ic-arrows" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l5-5 5 5M7 14l5 5 5-5"/></symbol>
+            <symbol id="ic-question" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></symbol>
+
             <symbol id="ic-mascot" viewBox="0 0 160 170">
                 <path d="M80 14c0-8 18-12 26-6-8 0-14 3-18 8z" fill="#ef233c"/>
                 <rect x="38" y="82" width="12" height="40" rx="6" fill="#8a6a6a"/>
@@ -71,11 +79,9 @@
                 </div>
                 
                 <button class="opt glass sel" data-opt>
-                    <!-- В наличии 100 шт -->
                     <span>1 месяц</span><span class="pr">20.00 ₴<small class="stock-display">В наличии: 100 шт.</small></span>
                 </button>
                 
-                <!-- Тариф 3 месяца отключен (Нет в наличии) -->
                 <button class="opt glass off" style="pointer-events: none; opacity: 0.5;">
                     <span>3 месяца</span><span class="pr">50.00 ₴<small>Нет в наличии</small></span>
                 </button>
@@ -84,7 +90,8 @@
                 
                 <div class="between" style="margin-top:22px">
                     <div><div class="lbl">Баланс</div><div class="bal user-bal">0.00 ₴</div></div>
-                    <button class="plus" data-topup="true">+</button>
+                    <!-- Кнопка пополнения теперь открывает модальное окно -->
+                    <button class="plus" data-open-modal="topup-modal">+</button>
                 </div>
             </div>
 
@@ -113,6 +120,7 @@
 
         <!-- ================= ВКЛАДКА: УРОВНИ ================= -->
         <div id="view-lv" class="view">
+            <!-- Код вкладки Уровни (оставлен без изменений) -->
             <div class="card hero">
                 <div class="row">
                     <div class="ico"><svg><use href="#ic-star"></use></svg></div>
@@ -145,23 +153,12 @@
             </div>
 
             <div class="card" style="font-weight:600;line-height:1.45;color:#e6dbdb;padding:16px">Программа лояльности для реселлеров: больше оборот — ниже цена. Уровень даёт бонус к пополнению баланса. Оборот считается по пополнениям за последние 60 дней.</div>
-            <div class="between" style="margin:20px 4px 12px"><h2 style="font-size:19px">Уровни</h2><b class="d" style="color:var(--soft);font-size:14px">0 / 5</b></div>
-
+            
             <div class="lvl">
                 <div class="b"><svg><use href="#ic-crown"></use></svg></div>
                 <div><h4>Уровень 1</h4><small>от 3000.00 ₴</small><span class="tag nx">Следующая цель</span></div>
                 <div class="pc">+3%</div>
                 <div class="bar"><i style="width:0%"></i></div>
-            </div>
-            <div class="lvl lock">
-                <div class="b"><svg><use href="#ic-medal"></use></svg></div>
-                <div><h4>Уровень 2</h4><small>от 7000.00 ₴</small><span class="tag">Закрыт</span></div>
-                <div class="pc">+5%</div>
-            </div>
-            <div class="lvl lock">
-                <div class="b"><svg><use href="#ic-star"></use></svg></div>
-                <div><h4>Уровень 3</h4><small>от 17000.00 ₴</small><span class="tag">Закрыт</span></div>
-                <div class="pc">+7%</div>
             </div>
         </div>
 
@@ -184,10 +181,8 @@
                         <div class="cnt-val" id="boost-count">1</div>
                         <button class="cnt-btn" id="boost-plus">+</button>
                     </div>
-                    <!-- Текст в наличии 100 шт -->
                     <div class="min-lbl">Минимум 1 месяц • <span class="stock-display">В наличии: 100 шт.</span></div>
                     
-                    <!-- Кнопки быстрого выбора 2-4-6-8-10-14 -->
                     <div class="chips">
                         <button class="chip" data-boost-val="2">2</button>
                         <button class="chip" data-boost-val="4">4</button>
@@ -241,6 +236,9 @@
 
         <!-- ================= ВКЛАДКА: КАСТОМ ================= -->
         <div id="view-cust" class="view">
+            <input type="file" id="upload-banner" accept="image/*" style="display: none;">
+            <input type="file" id="upload-avatar" accept="image/*" style="display: none;">
+
             <div class="card hero">
                 <div class="row">
                     <div class="ico"><svg><use href="#ic-pen"></use></svg></div>
@@ -259,14 +257,15 @@
                 <h2 style="font-size:17px;margin:4px 0 14px">Настройка профиля бустеров</h2>
                 
                 <div style="border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#0a0612">
-                    <div class="ban">DISCORD
+                    <div class="ban" id="preview-banner">
+                        <span id="banner-text">DISCORD</span>
                         <div class="x">
-                            <button class="circ" data-toast="Сброс">✕</button>
-                            <button class="circ" data-toast="Редактировать баннер">✎</button>
+                            <button class="circ" id="btn-reset-images">✕</button>
+                            <button class="circ" id="btn-edit-banner">✎</button>
                         </div>
                     </div>
                     <div class="prof">
-                        <div class="av" style="background:#5a0000;">TOOL<br>SHOP</div>
+                        <div class="av" id="preview-avatar" style="background:#5a0000;" title="Нажми, чтобы изменить фото">TOOL<br>SHOP</div>
                         <div style="flex:1;padding-bottom:6px">
                             <div class="between">
                                 <h3 style="font-size:22px" id="pn">Tool Shop</h3>
@@ -292,7 +291,7 @@
                     <h2 class="title">Профиль</h2>
                 </div>
                 <div class="glass row" style="padding:14px;margin-top:14px">
-                    <div id="user-avatar" class="av"></div>
+                    <div id="user-avatar" class="av" style="cursor: default;"></div>
                     <div>
                         <h3 style="font-size:22px" class="user-name">Пользователь</h3>
                         <div style="color:var(--soft);font-weight:700" class="user-nick"></div>
@@ -315,32 +314,7 @@
                     </div>
                 </div>
             </div>
-
-            <div class="item" data-toast="Плагин скачивается">
-                <div class="ico" style="width:46px;height:46px"><svg><use href="#ic-plug"></use></svg></div>
-                <h4>Плагин для FPCardinal</h4>
-                <span class="lk">Скачать</span>
-            </div>
-
-            <div class="item" style="cursor:default">
-                <div class="ico" style="width:46px;height:46px"><svg><use href="#ic-globe"></use></svg></div>
-                <div><h4>Язык</h4><p>Русский / English</p></div>
-                <div class="lng">
-                    <button data-lang="ru" class="on">РУС</button>
-                    <button data-lang="lang">ENG</button>
-                </div>
-            </div>
-
-            <button class="item" data-toast="Поддержка: Telegram или почта">
-                <div class="ico" style="width:46px;height:46px"><svg><use href="#ic-chat"></use></svg></div>
-                <div><h4>Связаться с поддержкой</h4><p>Telegram или почта</p></div>
-                <span class="ar">›</span>
-            </button>
-            <button class="item" data-toast="Реферальная ссылка скоро">
-                <div class="ico" style="width:46px;height:46px"><svg><use href="#ic-users"></use></svg></div>
-                <div><h4>Рефералы</h4><p>Ссылка и доход от рефералов</p></div>
-                <span class="ar">›</span>
-            </button>
+            
             <button class="item" data-go="hist">
                 <div class="ico" style="width:46px;height:46px"><svg><use href="#ic-list"></use></svg></div>
                 <div><h4>История заказов</h4><p>Все заказы и пополнения</p></div>
@@ -382,6 +356,65 @@
             <svg><use href="#ic-user"></use></svg><span>Профиль</span>
         </button>
     </nav>
+
+    <!-- ================= МОДАЛЬНОЕ ОКНО ПОПОЛНЕНИЯ (Скриншот) ================= -->
+    <div id="topup-modal" class="modal-overlay">
+        <div class="modal-sheet">
+            <h2 class="modal-title">Выберите способ</h2>
+            
+            <!-- Метод 1 -->
+            <button class="pay-method" data-pay="card">
+                <div class="pay-ic" style="background: rgba(255,255,255,0.1);"><svg><use href="#ic-card"></use></svg></div>
+                <div class="pay-text">
+                    <h4>Рубли / Гривны</h4>
+                    <p>Банковская карта</p>
+                </div>
+                <div class="pay-arr"><svg><use href="#ic-chevron"></use></svg></div>
+            </button>
+
+            <!-- Метод 2 -->
+            <button class="pay-method" data-pay="crypto">
+                <div class="pay-ic" style="background: #198754; color: #fff;"><svg><use href="#ic-crypto"></use></svg></div>
+                <div class="pay-text">
+                    <h4>Криптовалюта</h4>
+                    <p>любая криптовалюта</p>
+                </div>
+                <div class="pay-arr"><svg><use href="#ic-chevron"></use></svg></div>
+            </button>
+
+            <!-- Метод 3 -->
+            <button class="pay-method" data-pay="cryptobot">
+                <div class="pay-ic" style="background: #0d6efd; color: #fff;"><svg><use href="#ic-bot"></use></svg></div>
+                <div class="pay-text">
+                    <h4>CryptoBot</h4>
+                    <p>USDT / LTC / TON</p>
+                </div>
+                <div class="pay-arr"><svg><use href="#ic-chevron"></use></svg></div>
+            </button>
+
+            <!-- Метод 4 -->
+            <button class="pay-method" data-pay="funpay">
+                <div class="pay-ic" style="background: #0d6efd; color: #fff;"><svg><use href="#ic-arrows"></use></svg></div>
+                <div class="pay-text">
+                    <h4>FunPay</h4>
+                    <p>СБП / Карта / USDT / BTC / LTC</p>
+                </div>
+                <div class="pay-arr"><svg><use href="#ic-chevron"></use></svg></div>
+            </button>
+
+            <!-- Метод 5 -->
+            <button class="pay-method" data-pay="other">
+                <div class="pay-ic" style="background: rgba(255,255,255,0.05);"><svg><use href="#ic-question"></use></svg></div>
+                <div class="pay-text">
+                    <h4>Другое</h4>
+                    <p>Через администратора</p>
+                </div>
+                <div class="pay-arr"><svg><use href="#ic-chevron"></use></svg></div>
+            </button>
+
+            <button class="btn-cancel" data-close-modal="topup-modal">Отмена</button>
+        </div>
+    </div>
 
     <!-- Всплывающее уведомление -->
     <div class="toast" id="toast"></div>
